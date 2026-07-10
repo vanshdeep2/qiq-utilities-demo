@@ -43,21 +43,29 @@ export const DRIVER_ROWS = [
 
 export const CROSS_KPI_PATTERNS = [
   {
+    id: 'exec-ckp-1',
+    accent: 'red',
     label: 'Cross-KPI Pattern 1',
     headline: 'Billing documentation gaps drive repeat contacts and CSAT decline',
     body: 'Agents closing high-bill and payment calls without confirming arrangement terms or next steps are generating a 37% repeat contact rate on the Billing & Payments queue - nearly triple the Outage & Service Requests queue. Documentation Accuracy and Resolution & Close are the two lowest-scoring quality pillars on billing contacts.',
   },
   {
+    id: 'exec-ckp-2',
+    accent: 'red',
     label: 'Cross-KPI Pattern 2',
     headline: 'Outage ETA gaps create critical failures and regulatory exposure',
     body: 'Multiple agents told customers they could not provide restoration timelines without supervisor access. These ETA gaps cluster in weeks 1–4 and map directly to critical failure flags, CSAT scores below 3, and elevated PUC complaint risk.',
   },
   {
+    id: 'exec-ckp-3',
+    accent: 'green',
     label: 'Cross-KPI Pattern 3',
     headline: 'Formal coaching at W5 breaks the billing performance slide',
     body: 'Four agents flagged after 7+ consecutive days of micro coaching on unresolved payment arrangements received formal TL-led sessions in week 5. Billing queue FCR moved from 37% at W5 to 59% by W8; micro coaching frequency on those agents dropped sharply.',
   },
   {
+    id: 'exec-ckp-4',
+    accent: 'amber',
     label: 'Cross-KPI Pattern 4',
     headline: 'Agent variance on billing handling is real and coachable',
     body: 'Billing FCR ranges from above 80% for top performers to below 40% for struggling agents on the same queue. Post-coaching improvement on the four flagged agents validates that structured intervention - not queue reassignment - is the lever.',
@@ -65,4 +73,4 @@ export const CROSS_KPI_PATTERNS = [
 ]
 
 export const LIVE_LABEL = 'Live · May 2026'
-export const CALLS_PILL = '2,200 contacts analysed · 8 weeks'
+export const CALLS_PILL = '10,000 contacts analysed · 8 weeks'

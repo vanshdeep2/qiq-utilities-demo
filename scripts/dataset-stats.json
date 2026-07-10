@@ -1,130 +1,728 @@
 {
-  "n": 2200,
-  "aht": 362.3890909090909,
-  "fcr": 61,
-  "csat": 3.4936818181818157,
+  "n": 10000,
+  "aht": 359.5528,
+  "fcr": 65.63,
+  "csat": 3.6353499999999803,
   "rcr": 23,
-  "er": 7.590909090909091,
-  "tr": 13.40909090909091,
-  "csatLow": 18,
+  "er": 9.2,
+  "tr": 14.099999999999998,
+  "csatLow": 15.68,
+  "byL1": {
+    "Billing & Payments": {
+      "count": 3627,
+      "aht": 458.97904604356216,
+      "fcr": 50.951199338296114,
+      "csat": 3.0578439481665534,
+      "rcr": 41.687344913151364
+    },
+    "Metering": {
+      "count": 1426,
+      "aht": 289.31276297335205,
+      "fcr": 75.38569424964938,
+      "csat": 3.9692847124824726,
+      "rcr": 11.85133239831697
+    },
+    "Outages & Emergencies": {
+      "count": 1703,
+      "aht": 290.24016441573696,
+      "fcr": 75.51379917792131,
+      "csat": 3.9756899588960644,
+      "rcr": 12.272460364063416
+    },
+    "Moving & Connections": {
+      "count": 1132,
+      "aht": 288.9328621908127,
+      "fcr": 74.64664310954063,
+      "csat": 3.9729681978798577,
+      "rcr": 13.780918727915195
+    },
+    "Tariffs & Contracts": {
+      "count": 1431,
+      "aht": 348.38993710691824,
+      "fcr": 70.020964360587,
+      "csat": 3.9345213137665955,
+      "rcr": 11.949685534591195
+    },
+    "Account & General": {
+      "count": 676,
+      "aht": 291.0769230769231,
+      "fcr": 75,
+      "csat": 3.97381656804734,
+      "rcr": 11.982248520710058
+    }
+  },
   "byQueue": {
     "Billing & Payments": {
-      "count": 964,
-      "aht": 442.9927385892116,
-      "fcr": 50.933609958506224,
-      "csat": 3.0290456431535264,
-      "rcr": 38.69294605809129
+      "count": 3627,
+      "aht": 458.97904604356216,
+      "fcr": 50.951199338296114,
+      "csat": 3.0578439481665534,
+      "rcr": 41.687344913151364
     },
-    "Outage & Service Requests": {
-      "count": 706,
-      "aht": 322.4362606232295,
-      "fcr": 70.25495750708215,
-      "csat": 3.8502832861189864,
-      "rcr": 12.747875354107649
+    "Metering": {
+      "count": 1426,
+      "aht": 289.31276297335205,
+      "fcr": 75.38569424964938,
+      "csat": 3.9692847124824726,
+      "rcr": 11.85133239831697
     },
-    "Account & General Enquiries": {
-      "count": 530,
-      "aht": 269.0018867924528,
-      "fcr": 66.98113207547169,
-      "csat": 3.8637735849056614,
-      "rcr": 8.11320754716981
+    "Outages & Emergencies": {
+      "count": 1703,
+      "aht": 290.24016441573696,
+      "fcr": 75.51379917792131,
+      "csat": 3.9756899588960644,
+      "rcr": 12.272460364063416
+    },
+    "Moving & Connections": {
+      "count": 1132,
+      "aht": 288.9328621908127,
+      "fcr": 74.64664310954063,
+      "csat": 3.9729681978798577,
+      "rcr": 13.780918727915195
+    },
+    "Tariffs & Contracts": {
+      "count": 1431,
+      "aht": 348.38993710691824,
+      "fcr": 70.020964360587,
+      "csat": 3.9345213137665955,
+      "rcr": 11.949685534591195
+    },
+    "Account & General": {
+      "count": 676,
+      "aht": 291.0769230769231,
+      "fcr": 75,
+      "csat": 3.97381656804734,
+      "rcr": 11.982248520710058
     }
+  },
+  "highRisk": {
+    "count": 3253,
+    "aht": 478.69873962496155,
+    "fcr": 48.04795573316938
+  },
+  "lowRisk": {
+    "count": 6747,
+    "fcr": 74.1070105231955
   },
   "byWeek": [
     {
       "week": "W1",
-      "aht": 362.47636363636366,
-      "fcr": 50.90909090909091,
-      "csat": 3.581454545454542,
-      "cf": 17,
-      "returnsAht": 438.664,
-      "returnsFcr": 55.2
+      "aht": 360.31244979919677,
+      "fcr": 65.70281124497993,
+      "csat": 3.7273895582329315,
+      "cf": 77,
+      "returnsAht": 470.15813953488373,
+      "returnsFcr": 43.95348837209303
     },
     {
       "week": "W2",
-      "aht": 370.1127272727273,
-      "fcr": 62.18181818181818,
-      "csat": 3.546545454545454,
-      "cf": 26,
-      "returnsAht": 459.3076923076923,
-      "returnsFcr": 49.572649572649574
+      "aht": 363.51437699680514,
+      "fcr": 65.33546325878594,
+      "csat": 3.7162939297124633,
+      "cf": 82,
+      "returnsAht": 493.6265664160401,
+      "returnsFcr": 43.35839598997494
     },
     {
       "week": "W3",
-      "aht": 382.24727272727273,
-      "fcr": 58.54545454545455,
-      "csat": 3.43018181818182,
-      "cf": 26,
-      "returnsAht": 472.7769230769231,
-      "returnsFcr": 46.92307692307692
+      "aht": 375.8577138289368,
+      "fcr": 61.15107913669065,
+      "csat": 3.4823341326938455,
+      "cf": 105,
+      "returnsAht": 515.0136054421769,
+      "returnsFcr": 43.31065759637188
     },
     {
       "week": "W4",
-      "aht": 391.24,
-      "fcr": 50.54545454545455,
-      "csat": 3.2232727272727306,
-      "cf": 24,
-      "returnsAht": 490.55725190839695,
-      "returnsFcr": 34.35114503816794
+      "aht": 385.2086330935252,
+      "fcr": 62.43005595523581,
+      "csat": 3.402238209432449,
+      "cf": 123,
+      "returnsAht": 534.3909090909091,
+      "returnsFcr": 40
     },
     {
       "week": "W5",
-      "aht": 383.12,
-      "fcr": 62.909090909090914,
-      "csat": 3.3854545454545466,
-      "cf": 14,
-      "returnsAht": 496.4159292035398,
-      "returnsFcr": 43.36283185840708
+      "aht": 375.73621103117506,
+      "fcr": 62.589928057553955,
+      "csat": 3.5442046362909694,
+      "cf": 59,
+      "returnsAht": 542.8157894736842,
+      "returnsFcr": 39.473684210526315
     },
     {
       "week": "W6",
-      "aht": 341.5890909090909,
-      "fcr": 68.72727272727272,
-      "csat": 3.584363636363634,
-      "cf": 9,
-      "returnsAht": 406.74311926605503,
-      "returnsFcr": 56.88073394495413
+      "aht": 343.5624,
+      "fcr": 66.32000000000001,
+      "csat": 3.688320000000002,
+      "cf": 45,
+      "returnsAht": 436.93147208121826,
+      "returnsFcr": 52.28426395939086
     },
     {
       "week": "W7",
-      "aht": 332.05454545454546,
-      "fcr": 69.81818181818183,
-      "csat": 3.6101818181818164,
-      "cf": 7,
-      "returnsAht": 393.73636363636365,
-      "returnsFcr": 65.45454545454545
+      "aht": 338.328,
+      "fcr": 70.72,
+      "csat": 3.760880000000006,
+      "cf": 32,
+      "returnsAht": 421.7263157894737,
+      "returnsFcr": 60.26315789473684
     },
     {
       "week": "W8",
-      "aht": 336.27272727272725,
-      "fcr": 64.36363636363637,
-      "csat": 3.5879999999999996,
-      "cf": 7,
-      "returnsAht": 379.90697674418607,
-      "returnsFcr": 58.139534883720934
+      "aht": 333.8528,
+      "fcr": 70.8,
+      "csat": 3.761759999999997,
+      "cf": 41,
+      "returnsAht": 403.98971722365036,
+      "returnsFcr": 64.01028277634961
     }
   ],
   "byChannel": {
-    "voice": 0.6645454545454546,
-    "email": 0.2190909090909091,
-    "chat": 0.11636363636363636
+    "voice": 0.6505,
+    "email": 0.2192,
+    "chat": 0.1303
   },
   "coachedReturnsFcr": {
     "Lerato Nkosi": {
-      "w1w4": 35.294117647058826,
+      "w1w4": 28.57142857142857,
       "w7w8": 100
     },
     "Pieter Botha": {
-      "w1w4": 44.44444444444444,
-      "w7w8": 100
+      "w1w4": 33.980582524271846,
+      "w7w8": 91.66666666666666
     },
     "Busisiwe Maseko": {
-      "w1w4": 25,
+      "w1w4": 31.46067415730337,
       "w7w8": 100
     },
     "Ayanda Mbeki": {
-      "w1w4": 15.384615384615385,
+      "w1w4": 34.5679012345679,
       "w7w8": 100
+    }
+  },
+  "driverStats": {
+    "byL1": {
+      "Billing & Payments": {
+        "volume": 3627,
+        "share": 36.3,
+        "fcr": 51,
+        "aht": 459,
+        "esc": 15.6,
+        "drivers": {
+          "Billing Disputes": {
+            "name": "Billing Disputes",
+            "volume": 752,
+            "share": 20.7,
+            "fcr": 50.5,
+            "aht": 476,
+            "esc": 16.6
+          },
+          "Incorrect Charges": {
+            "name": "Incorrect Charges",
+            "volume": 630,
+            "share": 17.4,
+            "fcr": 43.5,
+            "aht": 479,
+            "esc": 16.8
+          },
+          "Payment Plan Requests": {
+            "name": "Payment Plan Requests",
+            "volume": 588,
+            "share": 16.2,
+            "fcr": 47.6,
+            "aht": 481,
+            "esc": 14.3
+          },
+          "Tariff Corrections": {
+            "name": "Tariff Corrections",
+            "volume": 348,
+            "share": 9.6,
+            "fcr": 50,
+            "aht": 483,
+            "esc": 19.5
+          },
+          "Direct Debit Issues": {
+            "name": "Direct Debit Issues",
+            "volume": 205,
+            "share": 5.7,
+            "fcr": 81,
+            "aht": 288,
+            "esc": 6.8
+          },
+          "Final Bill Queries": {
+            "name": "Final Bill Queries",
+            "volume": 169,
+            "share": 4.7,
+            "fcr": 70.4,
+            "aht": 287,
+            "esc": 7.1
+          },
+          "Back-Billing Disputes": {
+            "name": "Back-Billing Disputes",
+            "volume": 526,
+            "share": 14.5,
+            "fcr": 49.6,
+            "aht": 476,
+            "esc": 16
+          },
+          "Refund Requests": {
+            "name": "Refund Requests",
+            "volume": 409,
+            "share": 11.3,
+            "fcr": 47.4,
+            "aht": 480,
+            "esc": 17.8
+          }
+        }
+      },
+      "Metering": {
+        "volume": 1426,
+        "share": 14.3,
+        "fcr": 75.4,
+        "aht": 289,
+        "esc": 5.6,
+        "drivers": {
+          "Meter Reading Submission": {
+            "name": "Meter Reading Submission",
+            "volume": 431,
+            "share": 30.2,
+            "fcr": 77.3,
+            "aht": 289,
+            "esc": 7.2
+          },
+          "Smart Meter Installation": {
+            "name": "Smart Meter Installation",
+            "volume": 225,
+            "share": 15.8,
+            "fcr": 74.7,
+            "aht": 290,
+            "esc": 3.6
+          },
+          "Faulty Meter": {
+            "name": "Faulty Meter",
+            "volume": 271,
+            "share": 19,
+            "fcr": 72.7,
+            "aht": 290,
+            "esc": 5.5
+          },
+          "Estimated Reading Dispute": {
+            "name": "Estimated Reading Dispute",
+            "volume": 340,
+            "share": 23.8,
+            "fcr": 75.6,
+            "aht": 289,
+            "esc": 6.2
+          },
+          "Meter Exchange": {
+            "name": "Meter Exchange",
+            "volume": 159,
+            "share": 11.2,
+            "fcr": 75.5,
+            "aht": 289,
+            "esc": 3.1
+          }
+        }
+      },
+      "Outages & Emergencies": {
+        "volume": 1703,
+        "share": 17,
+        "fcr": 75.5,
+        "aht": 290,
+        "esc": 5.4,
+        "drivers": {
+          "Power Cut Reporting": {
+            "name": "Power Cut Reporting",
+            "volume": 581,
+            "share": 34.1,
+            "fcr": 72.6,
+            "aht": 290,
+            "esc": 4.3
+          },
+          "Restoration Updates": {
+            "name": "Restoration Updates",
+            "volume": 509,
+            "share": 29.9,
+            "fcr": 78,
+            "aht": 290,
+            "esc": 6.7
+          },
+          "Planned Outage Query": {
+            "name": "Planned Outage Query",
+            "volume": 356,
+            "share": 20.9,
+            "fcr": 74.2,
+            "aht": 289,
+            "esc": 6.2
+          },
+          "Emergency Escalation": {
+            "name": "Emergency Escalation",
+            "volume": 257,
+            "share": 15.1,
+            "fcr": 79,
+            "aht": 292,
+            "esc": 4.3
+          }
+        }
+      },
+      "Moving & Connections": {
+        "volume": 1132,
+        "share": 11.3,
+        "fcr": 74.6,
+        "aht": 289,
+        "esc": 4.9,
+        "drivers": {
+          "Moving Home": {
+            "name": "Moving Home",
+            "volume": 436,
+            "share": 38.5,
+            "fcr": 75,
+            "aht": 289,
+            "esc": 5.3
+          },
+          "New Connection": {
+            "name": "New Connection",
+            "volume": 260,
+            "share": 23,
+            "fcr": 74.6,
+            "aht": 288,
+            "esc": 3.8
+          },
+          "Change of Tenancy": {
+            "name": "Change of Tenancy",
+            "volume": 237,
+            "share": 20.9,
+            "fcr": 73.8,
+            "aht": 287,
+            "esc": 6.8
+          },
+          "Disconnection Request": {
+            "name": "Disconnection Request",
+            "volume": 199,
+            "share": 17.6,
+            "fcr": 74.9,
+            "aht": 292,
+            "esc": 3.5
+          }
+        }
+      },
+      "Tariffs & Contracts": {
+        "volume": 1431,
+        "share": 14.3,
+        "fcr": 70,
+        "aht": 348,
+        "esc": 5.5,
+        "drivers": {
+          "Tariff Switch": {
+            "name": "Tariff Switch",
+            "volume": 536,
+            "share": 37.5,
+            "fcr": 69.8,
+            "aht": 351,
+            "esc": 6.7
+          },
+          "Fixed Deal Renewal": {
+            "name": "Fixed Deal Renewal",
+            "volume": 394,
+            "share": 27.5,
+            "fcr": 68.8,
+            "aht": 346,
+            "esc": 4.8
+          },
+          "Exit Fee Query": {
+            "name": "Exit Fee Query",
+            "volume": 293,
+            "share": 20.5,
+            "fcr": 68.3,
+            "aht": 349,
+            "esc": 4.8
+          },
+          "Price Cap Query": {
+            "name": "Price Cap Query",
+            "volume": 208,
+            "share": 14.5,
+            "fcr": 75.5,
+            "aht": 345,
+            "esc": 4.8
+          }
+        }
+      },
+      "Account & General": {
+        "volume": 676,
+        "share": 6.8,
+        "fcr": 75,
+        "aht": 291,
+        "esc": 7,
+        "drivers": {
+          "Account & Login Issues": {
+            "name": "Account & Login Issues",
+            "volume": 231,
+            "share": 34.2,
+            "fcr": 75.8,
+            "aht": 291,
+            "esc": 4.8
+          },
+          "Complaints": {
+            "name": "Complaints",
+            "volume": 143,
+            "share": 21.2,
+            "fcr": 77.6,
+            "aht": 291,
+            "esc": 6.3
+          },
+          "Policy Clarification": {
+            "name": "Policy Clarification",
+            "volume": 167,
+            "share": 24.7,
+            "fcr": 76.6,
+            "aht": 290,
+            "esc": 11.4
+          },
+          "Follow-up Calls": {
+            "name": "Follow-up Calls",
+            "volume": 135,
+            "share": 20,
+            "fcr": 68.9,
+            "aht": 292,
+            "esc": 5.9
+          }
+        }
+      }
+    },
+    "byL2": {
+      "Billing & Payments::Billing Disputes": {
+        "name": "Billing Disputes",
+        "volume": 752,
+        "share": 20.7,
+        "fcr": 50.5,
+        "aht": 476,
+        "esc": 16.6
+      },
+      "Billing & Payments::Incorrect Charges": {
+        "name": "Incorrect Charges",
+        "volume": 630,
+        "share": 17.4,
+        "fcr": 43.5,
+        "aht": 479,
+        "esc": 16.8
+      },
+      "Billing & Payments::Payment Plan Requests": {
+        "name": "Payment Plan Requests",
+        "volume": 588,
+        "share": 16.2,
+        "fcr": 47.6,
+        "aht": 481,
+        "esc": 14.3
+      },
+      "Billing & Payments::Tariff Corrections": {
+        "name": "Tariff Corrections",
+        "volume": 348,
+        "share": 9.6,
+        "fcr": 50,
+        "aht": 483,
+        "esc": 19.5
+      },
+      "Billing & Payments::Direct Debit Issues": {
+        "name": "Direct Debit Issues",
+        "volume": 205,
+        "share": 5.7,
+        "fcr": 81,
+        "aht": 288,
+        "esc": 6.8
+      },
+      "Billing & Payments::Final Bill Queries": {
+        "name": "Final Bill Queries",
+        "volume": 169,
+        "share": 4.7,
+        "fcr": 70.4,
+        "aht": 287,
+        "esc": 7.1
+      },
+      "Billing & Payments::Back-Billing Disputes": {
+        "name": "Back-Billing Disputes",
+        "volume": 526,
+        "share": 14.5,
+        "fcr": 49.6,
+        "aht": 476,
+        "esc": 16
+      },
+      "Billing & Payments::Refund Requests": {
+        "name": "Refund Requests",
+        "volume": 409,
+        "share": 11.3,
+        "fcr": 47.4,
+        "aht": 480,
+        "esc": 17.8
+      },
+      "Metering::Meter Reading Submission": {
+        "name": "Meter Reading Submission",
+        "volume": 431,
+        "share": 30.2,
+        "fcr": 77.3,
+        "aht": 289,
+        "esc": 7.2
+      },
+      "Metering::Smart Meter Installation": {
+        "name": "Smart Meter Installation",
+        "volume": 225,
+        "share": 15.8,
+        "fcr": 74.7,
+        "aht": 290,
+        "esc": 3.6
+      },
+      "Metering::Faulty Meter": {
+        "name": "Faulty Meter",
+        "volume": 271,
+        "share": 19,
+        "fcr": 72.7,
+        "aht": 290,
+        "esc": 5.5
+      },
+      "Metering::Estimated Reading Dispute": {
+        "name": "Estimated Reading Dispute",
+        "volume": 340,
+        "share": 23.8,
+        "fcr": 75.6,
+        "aht": 289,
+        "esc": 6.2
+      },
+      "Metering::Meter Exchange": {
+        "name": "Meter Exchange",
+        "volume": 159,
+        "share": 11.2,
+        "fcr": 75.5,
+        "aht": 289,
+        "esc": 3.1
+      },
+      "Outages & Emergencies::Power Cut Reporting": {
+        "name": "Power Cut Reporting",
+        "volume": 581,
+        "share": 34.1,
+        "fcr": 72.6,
+        "aht": 290,
+        "esc": 4.3
+      },
+      "Outages & Emergencies::Restoration Updates": {
+        "name": "Restoration Updates",
+        "volume": 509,
+        "share": 29.9,
+        "fcr": 78,
+        "aht": 290,
+        "esc": 6.7
+      },
+      "Outages & Emergencies::Planned Outage Query": {
+        "name": "Planned Outage Query",
+        "volume": 356,
+        "share": 20.9,
+        "fcr": 74.2,
+        "aht": 289,
+        "esc": 6.2
+      },
+      "Outages & Emergencies::Emergency Escalation": {
+        "name": "Emergency Escalation",
+        "volume": 257,
+        "share": 15.1,
+        "fcr": 79,
+        "aht": 292,
+        "esc": 4.3
+      },
+      "Moving & Connections::Moving Home": {
+        "name": "Moving Home",
+        "volume": 436,
+        "share": 38.5,
+        "fcr": 75,
+        "aht": 289,
+        "esc": 5.3
+      },
+      "Moving & Connections::New Connection": {
+        "name": "New Connection",
+        "volume": 260,
+        "share": 23,
+        "fcr": 74.6,
+        "aht": 288,
+        "esc": 3.8
+      },
+      "Moving & Connections::Change of Tenancy": {
+        "name": "Change of Tenancy",
+        "volume": 237,
+        "share": 20.9,
+        "fcr": 73.8,
+        "aht": 287,
+        "esc": 6.8
+      },
+      "Moving & Connections::Disconnection Request": {
+        "name": "Disconnection Request",
+        "volume": 199,
+        "share": 17.6,
+        "fcr": 74.9,
+        "aht": 292,
+        "esc": 3.5
+      },
+      "Tariffs & Contracts::Tariff Switch": {
+        "name": "Tariff Switch",
+        "volume": 536,
+        "share": 37.5,
+        "fcr": 69.8,
+        "aht": 351,
+        "esc": 6.7
+      },
+      "Tariffs & Contracts::Fixed Deal Renewal": {
+        "name": "Fixed Deal Renewal",
+        "volume": 394,
+        "share": 27.5,
+        "fcr": 68.8,
+        "aht": 346,
+        "esc": 4.8
+      },
+      "Tariffs & Contracts::Exit Fee Query": {
+        "name": "Exit Fee Query",
+        "volume": 293,
+        "share": 20.5,
+        "fcr": 68.3,
+        "aht": 349,
+        "esc": 4.8
+      },
+      "Tariffs & Contracts::Price Cap Query": {
+        "name": "Price Cap Query",
+        "volume": 208,
+        "share": 14.5,
+        "fcr": 75.5,
+        "aht": 345,
+        "esc": 4.8
+      },
+      "Account & General::Account & Login Issues": {
+        "name": "Account & Login Issues",
+        "volume": 231,
+        "share": 34.2,
+        "fcr": 75.8,
+        "aht": 291,
+        "esc": 4.8
+      },
+      "Account & General::Complaints": {
+        "name": "Complaints",
+        "volume": 143,
+        "share": 21.2,
+        "fcr": 77.6,
+        "aht": 291,
+        "esc": 6.3
+      },
+      "Account & General::Policy Clarification": {
+        "name": "Policy Clarification",
+        "volume": 167,
+        "share": 24.7,
+        "fcr": 76.6,
+        "aht": 290,
+        "esc": 11.4
+      },
+      "Account & General::Follow-up Calls": {
+        "name": "Follow-up Calls",
+        "volume": 135,
+        "share": 20,
+        "fcr": 68.9,
+        "aht": 292,
+        "esc": 5.9
+      }
     }
   }
 }

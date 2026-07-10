@@ -4,27 +4,20 @@ export const Q_NAMES = {
   q1: 'Resolution',
   q2: 'Diagnosis',
   q3: 'Efficiency',
-  q4: 'Account Verification',
+  q4: 'Verification',
   q5: 'Escalation',
   q6: 'Expectation Setting',
   q7: 'Communication',
   q8: 'Callback',
-  q9: 'Resolution & Close',
+  q9: 'Billing Resolution',
   q10: 'Customer Appreciation',
   q11: 'Documentation Accuracy',
   q12: 'Internal Process',
-  q13: 'Utility Policy',
-  q14: 'Safety & Compliance',
+  q13: 'Business Policy',
+  q14: 'Compliance',
 }
 
 export const PASS_FAIL_QS = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q11']
-
-export const QUEUE_FILTERS = [
-  { value: 'all', label: 'All queues' },
-  { value: 'Billing & Payments', label: 'Billing & Payments' },
-  { value: 'Outage & Service Requests', label: 'Outage & Service Requests' },
-  { value: 'Account & General Enquiries', label: 'Account & General Enquiries' },
-]
 
 export const AGENT_SLUGS = {
   'Michael Naidoo': 'michael-naidoo',
@@ -62,7 +55,20 @@ export const WEEK_BOUNDARIES = [
   { start: '2026-05-25', end: '2026-05-31', label: 'W8' },
 ]
 
-export const CF_QUICK_LINKS = FLAGGED_CALLS.filter((c) => c.callId.startsWith('ME-BP-CF')).map((c) => ({
+export const CF_CATEGORY_LABELS = {
+  policy_misquote: 'Policy misquote',
+  no_resolution_confirmation: 'No resolution confirmation',
+  no_case_notes: 'No case notes',
+  escalation_avoidance: 'Escalation avoidance',
+  verification_failure: 'Verification failure',
+}
+
+export function formatCfCategory(categoryId) {
+  if (!categoryId) return 'Critical failure'
+  return CF_CATEGORY_LABELS[categoryId] || categoryId.replace(/_/g, ' ')
+}
+
+export const CF_QUICK_LINKS = FLAGGED_CALLS.filter((c) => c.callId.startsWith('ME-RX')).map((c) => ({
   callId: c.callId,
   agent: c.agent,
   label: c.callId,

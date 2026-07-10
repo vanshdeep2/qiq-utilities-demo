@@ -1,18 +1,27 @@
 /**
- * Generates Meridian Energy utilities contact dataset (2,200 records, 8 weeks).
+ * Generates Meridian Energy contact dataset (10,000 records, 8 weeks).
  * Run: node scripts/generate-meridian-dataset.mjs
  */
 import { writeFileSync, mkdirSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { randomUUID } from 'crypto'
+import {
+  DRIVER_TAXONOMY,
+  L1_CATEGORIES,
+  L1_WEIGHTS,
+  L2_WEIGHTS,
+  isHighRiskDriver,
+  pickWeightedDriver,
+} from '../src/data/contactDriverTaxonomy.js'
+import { DRIVER_ISSUE_TEMPLATES } from './meridian-driver-templates.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..')
 const OUT = join(ROOT, 'public', 'data', 'contact_search_data.json')
 const STATS_OUT = join(ROOT, 'scripts', 'dataset-stats.json')
 
-const TOTAL = 2200
+const TOTAL = 10000
 const WEEKS = 8
 const PER_WEEK = TOTAL / WEEKS
 
@@ -27,75 +36,61 @@ const WEEK_BOUNDARIES = [
   { start: '2026-05-25', end: '2026-05-31', label: 'W8' },
 ]
 
-const QUEUES = ['Billing & Payments', 'Outage & Service Requests', 'Account & General Enquiries']
-const QUEUE_WEIGHTS = [0.4, 0.35, 0.25]
 const CHANNELS = ['voice', 'email', 'chat']
 const CHANNEL_WEIGHTS = [0.65, 0.22, 0.13]
 
 const FEATURED_AGENTS = [
-  'Michael Naidoo',
-  'Nomsa Dlamini',
-  'Lerato Nkosi',
-  'Pieter Botha',
-  'Busisiwe Maseko',
-  'Ayanda Mbeki',
-  'Zanele Ndlovu',
-  'Thabo van der Merwe',
-  'Janine Jacobs',
-  'Sipho Khumalo',
+  'Michael Naidoo', 'Nomsa Dlamini', 'Lerato Nkosi', 'Pieter Botha', 'Busisiwe Maseko',
+  'Ayanda Mbeki', 'Zanele Ndlovu', 'Thabo van der Merwe', 'Janine Jacobs', 'Sipho Khumalo',
 ]
 
 const COACHED_AGENTS = ['Lerato Nkosi', 'Pieter Botha', 'Busisiwe Maseko', 'Ayanda Mbeki']
 
 const EXTRA_AGENTS = [
-  'Emma Larson', 'Tyler Hansen', 'Sarah O\'Brien', 'Marcus Chen', 'Rachel Kowalski',
-  'David Olsen', 'Amanda Foster', 'James Novak', 'Brian Henning', 'Megan Kowalski',
-  'Chris Mueller', 'Laura Schmidt', 'Kevin Anderson', 'Nicole Peterson', 'Ryan Johnson',
-  'Ashley Williams', 'Matt Thompson', 'Jennifer Davis', 'Scott Miller', 'Kimberly Brown',
-  'Daniel Wilson', 'Michelle Garcia', 'Jason Martinez', 'Stephanie Robinson', 'Andrew Clark',
-  'Heather Lewis', 'Brandon Lee', 'Melissa Walker', 'Justin Hall', 'Rebecca Allen',
-  'Nathan Young', 'Samantha King', 'Eric Wright', 'Christina Scott', 'Adam Green',
-  'Angela Baker', 'Patrick Adams', 'Lisa Nelson', 'Gregory Hill', 'Diana Ramirez',
-  'Timothy Campbell', 'Karen Mitchell', 'Jeffrey Roberts', 'Susan Carter', 'Mark Phillips',
-  'Deborah Evans', 'Steven Turner', 'Carol Parker', 'Paul Collins', 'Betty Edwards',
-  'Kenneth Stewart', 'Dorothy Morris', 'George Rogers', 'Nancy Reed', 'Frank Cook',
-  'Helen Morgan', 'Raymond Bell', 'Sharon Murphy', 'Larry Bailey', 'Donna Rivera',
-  'Jerry Cooper', 'Ruth Richardson', 'Dennis Cox', 'Janet Howard', 'Walter Ward',
-  'Frances Torres', 'Henry Peterson', 'Joyce Gray', 'Arthur James', 'Alice Watson',
-  'Albert Brooks', 'Marie Kelly', 'Ralph Sanders', 'Jean Price', 'Roy Bennett',
+  'Andile Zulu', 'Bongani Ngcobo', 'Candice Pretorius', 'Dumisani Mthembu', 'Elize Steyn',
+  'Fikile Xaba', 'Gugu Mhlongo', 'Hendrik Kruger', 'Ingrid Bothma', 'Jabulani Sithole',
+  'Karabo Molefe', 'Lungile Cele', 'Mandla Dube', 'Naledi Mokoena', 'Oscar Viljoen',
+  'Palesa Radebe', 'Quinton Fourie', 'Refilwe Modise', 'Sibusiso Gumede', 'Themba Nkuna',
+  'Unathi Qwabe', 'Vuyisile Mabaso', 'Willem de Klerk', 'Xolani Mbatha', 'Yolanda Swart',
+  'Zinhle Buthelezi', 'Amahle Nkomo', 'Bheki Zondi', 'Chantelle van Wyk', 'Dineo Kgosana',
+  'Ebrahim Patel', 'Fatima Osman', 'Gert van Heerden', 'Hlengiwe Shange', 'Isaac Mnguni',
+  'Johan Erasmus', 'Kgomotso Seboko', 'Lerato Mabena', 'Mpho Tshabalala', 'Nhlanhla Mkhize',
+  'Olwethu Dlamini', 'Phumzile Nxumalo', 'Riaan Louw', 'Sello Mahlangu', 'Thandiwe Maseko',
+  'Ulrich van Niekerk', 'Vusi Ndaba', 'Wandile Khoza', 'Xoliswa Mthethwa', 'Yusuf Adams',
+  'Zodwa Maphumulo', 'Anathi Bhengu', 'Brenton Jacobs', 'Cebile Mkhwanazi', 'Daniel Mokoena',
+  'Elsabe Venter', 'Fanie Coetzee', 'Gcinile Mabaso', 'Hermanus du Plessis', 'Itumeleng Moloi',
+  'Jaco van Zyl', 'Keabetswe Modise', 'Lindiwe Nkabinde', 'Marius Steenkamp', 'Nokuthula Zungu',
+  'Oupa Moleko', 'Petra van der Berg', 'Qinisile Mthembu', 'Rethabile Mokoena', 'Stefan Nel',
+  'Tshepo Molefe', 'Unathi Mabena', 'Vernon Pieterse', 'Winnie Mabaso', 'Xander van Rooyen',
 ]
 
 const ALL_AGENTS = [...FEATURED_AGENTS, ...EXTRA_AGENTS].slice(0, 85)
 
+const CF_WEEKLY_TARGET = [77, 82, 105, 123, 59, 45, 32, 41]
+
+const FEATURED_CF_CALLS = [
+  { callId: 'ME-RX-CF0001', agent: 'Pieter Botha', date: '2026-04-14', cfType: 'policy_misquote' },
+  { callId: 'ME-RX-CF0002', agent: 'Lerato Nkosi', date: '2026-04-22', cfType: 'no_resolution_confirmation' },
+  { callId: 'ME-RX-CF0003', agent: 'Ayanda Mbeki', date: '2026-05-01', cfType: 'verification_failure' },
+  { callId: 'ME-RX-CF0004', agent: 'Zanele Ndlovu', date: '2026-05-08', cfType: 'escalation_avoidance' },
+  { callId: 'ME-RX-CF0005', agent: 'Busisiwe Maseko', date: '2026-04-18', cfType: 'no_case_notes' },
+]
+
 const CF_TYPES = [
-  { id: 'policy_misquote', label: 'Policy misquote: 5-day disconnect notice stated (policy is 10 days)', pillar: 'Utility Policy' },
-  { id: 'no_resolution_confirmation', label: 'No resolution confirmation: call closed without payment arrangement or outage ETA confirmed', pillar: 'Resolution & Close' },
+  { id: 'policy_misquote', label: 'Policy misquote: customer told to pay back-billed charges older than 12 months (policy limit is 12 months)', pillar: 'Business Policy' },
+  { id: 'no_resolution_confirmation', label: 'No billing resolution: call closed without confirming adjustment or payment plan', pillar: 'Billing Resolution' },
   { id: 'no_case_notes', label: 'No case notes: repeat contact where prior interaction had no documentation', pillar: 'Documentation Accuracy' },
   { id: 'escalation_avoidance', label: 'Escalation avoidance: criteria met but not escalated, third contact from same customer', pillar: 'Escalation' },
-  { id: 'verification_failure', label: 'Verification failure: account accessed without identity verification', pillar: 'Account Verification' },
+  { id: 'verification_failure', label: 'Verification failure: billing adjustment processed without identity verification', pillar: 'Verification' },
 ]
 
-const BILLING_SUBCATEGORIES = [
-  'High Bill Dispute', 'Payment Arrangement Request', 'Billing Error', 'Disconnection Notice',
-  'Budget Billing Enrollment', 'AutoPay Setup', 'Duplicate Charge', 'Deposit Inquiry',
-]
-
-const OUTAGE_SUBCATEGORIES = [
-  'Outage Report', 'Restoration ETA Inquiry', 'Partial Power Loss', 'Flickering / Voltage Issue',
-  'Gas Leak Report', 'Service Reconnection', 'Meter Read Dispute', 'New Service Connection',
-]
-
-const ACCOUNT_SUBCATEGORIES = [
-  'Start/Stop/Transfer Service', 'Account Login Issue', 'Green Energy Enrollment', 'Medical Baseline Rate',
-  'Landlord/Tenant Dispute', 'Rebate Program', 'Website Issue', 'Rate Plan Question',
-]
+const HIGH_RISK_L2_PICK = ["Billing Disputes","Incorrect Charges","Payment Plan Requests","Tariff Corrections","Back-Billing Disputes","Refund Requests"]
 
 const FIRST_NAMES = ['Alex', 'Jordan', 'Taylor', 'Morgan', 'Casey', 'Riley', 'Jamie', 'Avery', 'Quinn', 'Blake', 'Drew', 'Skyler', 'Cameron', 'Reese', 'Parker']
 const LAST_NAMES = ['Miller', 'Davis', 'Wilson', 'Brown', 'Garcia', 'Martinez', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Robinson', 'Clark']
 
-// Repeat-contact clusters for returns/refund search density
-const REPEAT_CLUSTERS = Array.from({ length: 45 }, (_, i) => ({
-  order: `ME-ACC-${10000 + i}`,
+const REPEAT_CLUSTERS = Array.from({ length: 205 }, (_, i) => ({
+  account: `ME-ACC-${10000 + i}`,
   customer: `${FIRST_NAMES[i % 15]} ${LAST_NAMES[i % 15]}`,
   contacts: 2 + (i % 3),
 }))
@@ -120,6 +115,22 @@ function pick(arr) {
   return arr[Math.floor(rand() * arr.length)]
 }
 
+function pickDriver(opts = {}) {
+  if (opts.l1 && opts.l2) return { l1: opts.l1, l2: opts.l2 }
+  if (opts.l1) {
+    const l2Items = DRIVER_TAXONOMY[opts.l1]
+    const weights = L2_WEIGHTS[opts.l1]
+    const l2Weights = l2Items.map((l2) => weights[l2] ?? 1 / l2Items.length)
+    return { l1: opts.l1, l2: pickWeighted(l2Items, l2Weights) }
+  }
+  if (opts.forceHighRisk) {
+    const l1 = pick(["Billing & Payments"])
+    const l2Items = DRIVER_TAXONOMY[l1].filter((l2) => HIGH_RISK_L2_PICK.includes(l2))
+    return { l1, l2: pick(l2Items.length ? l2Items : DRIVER_TAXONOMY[l1]) }
+  }
+  return pickWeightedDriver(rand)
+}
+
 function dateInWeek(weekIdx) {
   const w = WEEK_BOUNDARIES[weekIdx]
   const start = new Date(w.start)
@@ -136,32 +147,32 @@ function dateInWeek(weekIdx) {
   }
 }
 
-function weekParams(weekIdx, queue, agentName) {
+function weekParams(weekIdx, l1, l2, agentName) {
   const phase = weekIdx < 4 ? 'decline' : weekIdx === 4 ? 'intervention' : 'recovery'
-  const isBilling = queue === 'Billing & Payments'
+  const isHighRisk = isHighRiskDriver(l1, l2)
   const isCoached = COACHED_AGENTS.includes(agentName)
 
-  let fcrBase = isBilling ? 0.48 : queue === 'Outage & Service Requests' ? 0.68 : 0.75
-  let ahtBase = isBilling ? 380 : queue === 'Outage & Service Requests' ? 310 : 260
-  let csatBase = isBilling ? 3.2 : 3.8
-  let escProb = isBilling ? 0.12 : 0.06
-  let trProb = isBilling ? 0.18 : 0.10
-  let repeatProb = isBilling ? 0.28 : 0.12
-  let cfProb = isBilling ? 0.04 : 0.01
+  let fcrBase = isHighRisk ? 0.48 : l1 === 'Tariffs & Contracts' ? 0.68 : 0.75
+  let ahtBase = isHighRisk ? 380 : l1 === 'Tariffs & Contracts' ? 310 : 260
+  let csatBase = isHighRisk ? 3.2 : 3.8
+  let escProb = isHighRisk ? 0.12 : 0.06
+  let trProb = isHighRisk ? 0.18 : 0.10
+  let repeatProb = isHighRisk ? 0.28 : 0.12
+  let cfProb = isHighRisk ? 0.04 : 0.01
 
-  if (phase === 'decline' && isBilling) {
+  if (phase === 'decline' && isHighRisk) {
     fcrBase -= 0.02 * weekIdx
     ahtBase += 15 * weekIdx
     csatBase -= 0.08 * weekIdx
     repeatProb += 0.03 * weekIdx
     cfProb += 0.008 * weekIdx
-  } else if (phase === 'intervention' && isBilling) {
+  } else if (phase === 'intervention' && isHighRisk) {
     fcrBase -= 0.05
     ahtBase += 55
     csatBase -= 0.15
     repeatProb += 0.05
     cfProb += 0.01
-  } else if (phase === 'recovery' && isBilling) {
+  } else if (phase === 'recovery' && isHighRisk) {
     const recoveryWeek = weekIdx - 5
     fcrBase += 0.06 + recoveryWeek * 0.04
     ahtBase -= 20 + recoveryWeek * 12
@@ -170,7 +181,7 @@ function weekParams(weekIdx, queue, agentName) {
     cfProb -= 0.015
   }
 
-  if (isCoached && isBilling) {
+  if (isCoached && isHighRisk) {
     if (phase === 'decline' || phase === 'intervention') {
       fcrBase -= 0.12
       ahtBase += 40
@@ -186,19 +197,18 @@ function weekParams(weekIdx, queue, agentName) {
     }
   }
 
-  // High performers on returns
-  if (agentName === 'Michael Naidoo' && isBilling) {
+  if (agentName === 'Michael Naidoo' && isHighRisk) {
     fcrBase = Math.max(fcrBase, 0.82)
     csatBase = Math.max(csatBase, 4.1)
     cfProb *= 0.2
   }
-  if (agentName === 'Zanele Ndlovu' && isBilling && phase !== 'recovery') {
+  if (agentName === 'Zanele Ndlovu' && isHighRisk && phase !== 'recovery') {
     fcrBase = Math.min(fcrBase, 0.35)
     csatBase = Math.min(csatBase, 2.5)
     cfProb += 0.03
   }
 
-  return { fcrBase, ahtBase, csatBase, escProb, trProb, repeatProb, cfProb, phase }
+  return { fcrBase, ahtBase, csatBase, escProb, trProb, repeatProb, cfProb, phase, isHighRisk }
 }
 
 function makeQuestionEvals(qaScore, cfType) {
@@ -227,17 +237,16 @@ function makeQuestionEvals(qaScore, cfType) {
   return evals
 }
 
-function sectionScores(queue, qaScore, cfType) {
-  const isBilling = queue === 'Billing & Payments'
-  const doc = isBilling ? Math.min(qaScore - 15, 55) : qaScore - 5
-  const resolution = isBilling ? Math.min(qaScore - 10, 60) : qaScore
+function sectionScores(isHighRisk, qaScore, cfType) {
+  const doc = isHighRisk ? Math.min(qaScore - 15, 55) : qaScore - 5
+  const resolution = isHighRisk ? Math.min(qaScore - 10, 60) : qaScore
   const policy = cfType === 'policy_misquote' ? 20 : qaScore
   const experience = qaScore + 5
   return [
     { section: 'Customer Experience', score_pct: Math.min(100, experience), earned_weight: 26, applicable_weight: 34 },
     { section: 'Policy and Compliance', score_pct: Math.min(100, policy), earned_weight: 12, applicable_weight: 12 },
     { section: 'Documentation Accuracy', score_pct: Math.max(20, doc), earned_weight: 25, applicable_weight: 34 },
-    { section: 'Resolution & Close', score_pct: Math.max(15, resolution), earned_weight: 20, applicable_weight: 20 },
+    { section: 'Billing Resolution', score_pct: Math.max(15, resolution), earned_weight: 20, applicable_weight: 20 },
   ]
 }
 
@@ -249,162 +258,52 @@ function customerLine(text) {
   return `Customer: ${text}`
 }
 
-const SUBCATEGORY_ISSUES = {
-  'High Bill Dispute': {
-    customerOpen: 'My electric bill for account {order} is $285 this month - that is almost double what I normally pay.',
-    customerFollow: 'Nothing has changed at home. I need to understand why it jumped.',
-    agentFinding: 'I am pulling up your usage history and comparing it to the same period last year.',
-    agentResolve: 'Your usage increased 42% versus last month, likely due to heating. I have emailed a detailed usage comparison and set up a payment arrangement of $95 per month for three months.',
-  },
-  'Payment Arrangement Request': {
-    customerOpen: 'I cannot pay the full balance on account {order} by the due date.',
-    customerFollow: 'I can afford about $120 a month if that helps avoid disconnection.',
-    agentFinding: 'Your account qualifies for a standard payment arrangement under Meridian Energy policy.',
-    agentResolve: 'I have set up a 3-month payment plan of $118 per month starting today. Your service will remain active as long as payments are made on schedule.',
-  },
-  'Billing Error': {
-    customerOpen: 'I was charged twice for the same billing period on account {order}.',
-    customerFollow: 'My bank shows two identical withdrawals from Meridian Energy.',
-    agentFinding: 'I can see a duplicate posting on the March cycle.',
-    agentResolve: 'I have reversed the duplicate charge of $142.50. It will credit back within 3-5 business days and I have documented the correction on your account.',
-  },
-  'Disconnection Notice': {
-    customerOpen: 'I received a disconnection notice for account {order} and I want to know my options.',
-    customerFollow: 'I can make a partial payment today but not the full amount.',
-    agentFinding: 'Your account shows a past-due balance of $218 with a disconnect date scheduled.',
-    agentResolve: 'Meridian Energy requires a 10-day notice before disconnection. I have applied today\'s $100 payment and enrolled you in a payment arrangement to keep service active.',
-  },
-  'Budget Billing Enrollment': {
-    customerOpen: 'I would like to enroll account {order} in budget billing to even out my monthly payments.',
-    customerFollow: 'My bills swing a lot between summer and winter.',
-    agentFinding: 'Your 12-month average usage supports budget billing enrollment.',
-    agentResolve: 'Budget billing is active at $156 per month. True-up adjustments happen annually in April and I have sent confirmation by email.',
-  },
-  'AutoPay Setup': {
-    customerOpen: 'I need help setting up AutoPay for account {order}.',
-    customerFollow: 'I tried online but the bank verification step failed.',
-    agentFinding: 'I can see the failed verification attempt in the portal logs.',
-    agentResolve: 'AutoPay is now enrolled for the 15th of each month from your checking account ending in 4821. Confirmation has been emailed.',
-  },
-  'Duplicate Charge': {
-    customerOpen: 'I see two charges from Meridian Energy on account {order} for the same amount.',
-    customerFollow: 'Both posted on the same day.',
-    agentFinding: 'There is a duplicate payment posting from a web payment retry.',
-    agentResolve: 'The duplicate $89.00 charge has been reversed. You will see the credit within 3-5 business days.',
-  },
-  'Deposit Inquiry': {
-    customerOpen: 'When will I get my deposit back on account {order}?',
-    customerFollow: 'I moved out two months ago and closed service.',
-    agentFinding: 'Your final bill was issued and the deposit is eligible for refund.',
-    agentResolve: 'Your $150 deposit refund was processed today and will post within 7-10 business days to the card on file.',
-  },
-  'Outage Report': {
-    customerOpen: 'My power is out at {order} - the whole block seems dark.',
-    customerFollow: 'It went out about 30 minutes ago during the storm.',
-    agentFinding: 'I can see an active outage affecting 340 customers in your area.',
-    agentResolve: 'Crews are dispatched and estimated restoration is 4:30 PM today. I have enrolled you in outage text alerts.',
-  },
-  'Restoration ETA Inquiry': {
-    customerOpen: 'Do you have an update on when power will be restored for account {order}?',
-    customerFollow: 'It has been out since 8 AM.',
-    agentFinding: 'Our outage map shows a downed line repair in progress on your circuit.',
-    agentResolve: 'Current ETA is 2:00 PM. Crews are on site and I have updated your account with the latest restoration window.',
-  },
-  'Partial Power Loss': {
-    customerOpen: 'Only half my house has power at account {order}.',
-    customerFollow: 'The kitchen and bedrooms work but the living room does not.',
-    agentFinding: 'This pattern often indicates a tripped main breaker or partial feeder issue.',
-    agentResolve: 'I have logged a partial outage ticket. A technician will contact you within 2 hours. If you smell burning, call 911 first.',
-  },
-  'Flickering / Voltage Issue': {
-    customerOpen: 'My lights keep flickering at account {order}.',
-    customerFollow: 'It happens when the AC kicks on.',
-    agentFinding: 'Voltage fluctuation reports are elevated in your neighbourhood this week.',
-    agentResolve: 'I have scheduled a voltage check within 48 hours. Unplug sensitive electronics until the inspection is complete.',
-  },
-  'Gas Leak Report': {
-    customerOpen: 'I smell gas near my meter at account {order}.',
-    customerFollow: 'It is a strong rotten egg smell by the basement.',
-    agentFinding: 'For safety I need to transfer you to our gas emergency line immediately.',
-    agentResolve: 'I am escalating to gas emergency dispatch now. Please leave the area, do not use switches, and crews will arrive within 60 minutes.',
-  },
-  'Service Reconnection': {
-    customerOpen: 'My service was disconnected on account {order} and I need it turned back on.',
-    customerFollow: 'I can pay the full past-due balance today.',
-    agentFinding: 'Reconnection requires full past-due payment plus the reconnection fee.',
-    agentResolve: 'Payment of $318 is received. Reconnection is scheduled for today between 4-8 PM and I have sent confirmation by text.',
-  },
-  'Meter Read Dispute': {
-    customerOpen: 'I think my meter read is wrong on account {order}.',
-    customerFollow: 'The bill says 1,200 kWh but we were away half the month.',
-    agentFinding: 'I can see an estimated read was used last cycle.',
-    agentResolve: 'I have scheduled an actual meter read within 5 business days. Your bill will be adjusted if the estimate was high.',
-  },
-  'New Service Connection': {
-    customerOpen: 'I need to start electric service at a new address for account {order}.',
-    customerFollow: 'I move in on the 15th.',
-    agentFinding: 'Service availability is confirmed at your new address.',
-    agentResolve: 'Service start is scheduled for June 15. A $75 connection fee applies on your first bill and I have emailed the agreement.',
-  },
-  'Start/Stop/Transfer Service': {
-    customerOpen: 'I need to transfer service from my old address to a new one on account {order}.',
-    customerFollow: 'I am moving within the same city next Friday.',
-    agentFinding: 'Both addresses are in Meridian Energy territory.',
-    agentResolve: 'Stop date at your current address is Friday and start at the new address is the same day. Transfer confirmation is emailed.',
-  },
-  'Account Login Issue': {
-    customerOpen: 'I cannot log into my Meridian Energy account for {order}.',
-    customerFollow: 'Password reset emails are not arriving.',
-    agentFinding: 'Your email is verified but reset messages were blocked by a typo in the profile.',
-    agentResolve: 'I have corrected the email and triggered a new reset link. You should receive it within 15 minutes.',
-  },
-  'Green Energy Enrollment': {
-    customerOpen: 'I want to enroll account {order} in the WindSource green energy program.',
-    customerFollow: 'What is the extra cost per month?',
-    agentFinding: 'WindSource is available at 2 cents per kWh above standard rates.',
-    agentResolve: 'You are enrolled starting next billing cycle. Estimated additional cost is $8-12 per month based on your usage.',
-  },
-  'Medical Baseline Rate': {
-    customerOpen: 'I need to apply for the medical baseline rate on account {order}.',
-    customerFollow: 'My doctor can provide documentation for oxygen equipment.',
-    agentFinding: 'Medical baseline requires physician certification on our form.',
-    agentResolve: 'I have emailed the medical baseline application. Once approved, your baseline allowance increases by 500 kWh per month.',
-  },
-  'Landlord/Tenant Dispute': {
-    customerOpen: 'My tenant moved out but service is still in my name on account {order}.',
-    customerFollow: 'I need the account transferred or stopped.',
-    agentFinding: 'The account is currently in the landlord name with tenant occupancy noted.',
-    agentResolve: 'I have initiated landlord revert process. Service will stop in 3 business days unless a new tenant application is received.',
-  },
-  'Rebate Program': {
-    customerOpen: 'How do I claim the thermostat rebate for account {order}?',
-    customerFollow: 'I installed a smart thermostat last month.',
-    agentFinding: 'Your purchase qualifies for the $50 instant rebate program.',
-    agentResolve: 'Rebate application is submitted. You will receive $50 as a bill credit within 2 billing cycles.',
-  },
-  'Website Issue': {
-    customerOpen: 'The Meridian Energy website keeps timing out when I pay account {order}.',
-    customerFollow: 'I tried three browsers.',
-    agentFinding: 'We had a brief portal outage this morning that affected payments.',
-    agentResolve: 'The portal is restored. I have processed your $142 payment manually and sent a receipt by email.',
-  },
-  'Rate Plan Question': {
-    customerOpen: 'Am I on the best rate plan for account {order}?',
-    customerFollow: 'My neighbour pays less and we have similar homes.',
-    agentFinding: 'You are on standard residential. Time-of-use may suit your evening-heavy usage.',
-    agentResolve: 'I have emailed a rate comparison. You can switch to Time-of-Use online or I can change it now with no fee.',
-  },
+function fillTemplate(text, ref) {
+  return text.replace(/\{account\}/g, ref)
 }
 
-function fillTemplate(text, order) {
-  return text.replace(/\{order\}/g, order)
+function countTranscriptTurns(lines) {
+  let agent = 0
+  let customer = 0
+  for (const line of lines) {
+    if (line.startsWith('Agent (')) agent++
+    else if (line.startsWith('Customer:')) customer++
+  }
+  return { total: lines.length, agent, customer }
+}
+
+function padTranscript(lines, agent, ref, subcategory) {
+  const fillers = [
+    agentLine(agent, 'One moment while I review the account details in our system.'),
+    customerLine('Sure, take your time.'),
+    agentLine(agent, 'Thank you for waiting. I can see the full history on account ' + ref + '.'),
+    customerLine('Does that change anything about my request?'),
+    agentLine(agent, `To make sure I have this right - you contacted us about ${subcategory.toLowerCase()} on this account.`),
+    customerLine('Yes, that is correct.'),
+    agentLine(agent, 'I appreciate your patience while we work through this together.'),
+    customerLine('I just want to make sure it is actually resolved this time.'),
+    agentLine(agent, 'I have noted everything we discussed today on your case for future reference.'),
+    customerLine('Thank you for explaining that clearly.'),
+    agentLine(agent, 'Is there anything else about account ' + ref + ' I can help with before we close?'),
+    customerLine('No, I think we have covered everything for now.'),
+    agentLine(agent, 'Thank you for contacting Meridian Energy. We appreciate your business.'),
+  ]
+    let fi = 0
+  while (fi < fillers.length) {
+    const { total, agent: a, customer: c } = countTranscriptTurns(lines)
+    if (total >= 8 && a >= 3 && c >= 3) break
+    lines.splice(lines.length - 1, 0, fillers[fi])
+    fi++
+  }
+  return lines
 }
 
 function buildTranscript({
   agent,
-  order,
+  ref,
   subcategory,
-  queue,
+  l1,
+  isHighRisk,
   cfType,
   channel,
   phase,
@@ -412,23 +311,23 @@ function buildTranscript({
   fcr,
   escalated,
 }) {
-  const issue = SUBCATEGORY_ISSUES[subcategory] || {
-    customerOpen: `I need help with ${subcategory.toLowerCase()} on account {order}.`,
+  const issue = DRIVER_ISSUE_TEMPLATES[subcategory] || {
+    customerOpen: `I need help with ${subcategory.toLowerCase()} on account {account}.`,
     customerFollow: 'I have the account details ready if you need them.',
-    agentFinding: `Let me pull up account {order} in the system.`,
+    agentFinding: `Let me pull up account {account} in the system.`,
     agentResolve: `I have taken care of your ${subcategory.toLowerCase()} request and documented everything on the case.`,
   }
 
   const isBenchmark = agent === 'Michael Naidoo'
   const isCoached = COACHED_AGENTS.includes(agent)
   const coachedBadPhase = isCoached && (phase === 'decline' || phase === 'intervention')
-  const zaneleEscalationMiss = agent === 'Zanele Ndlovu' && phase !== 'recovery' && (isRepeat || cfType === 'escalation_avoidance')
+  const zaneleEscalationMiss = agent === 'Zanele Ndlovu' && cfType === 'escalation_avoidance'
 
   const lines = []
 
   if (channel === 'email') {
     lines.push('Email thread - Meridian Energy Customer Care')
-    lines.push(customerLine(`Re: account ${order} - ${subcategory.toLowerCase()}.`))
+    lines.push(customerLine(`Re: account ${ref} - ${subcategory.toLowerCase()}.`))
     lines.push(agentLine(agent, 'Thank you for contacting Meridian Energy Customer Care.'))
   } else if (channel === 'chat') {
     lines.push('Chat - Meridian Energy Support')
@@ -438,60 +337,57 @@ function buildTranscript({
   }
 
   if (cfType !== 'verification_failure' && !coachedBadPhase) {
-    lines.push(agentLine(agent, 'For security, can I confirm your account number and the service address?'))
-    lines.push(customerLine(`Account ${order}, and the address on file should match my service location.`))
+    lines.push(agentLine(agent, 'For security, can I confirm the account reference and the email address on the account?'))
+    lines.push(customerLine(`Account ${ref}, and the email on the account should be on file from when you registered.`))
   } else if (cfType === 'verification_failure') {
     lines.push(agentLine(agent, 'I can look into that billing issue for you right away.'))
-    lines.push(customerLine(fillTemplate(issue.customerOpen, order)))
+    lines.push(customerLine(fillTemplate(issue.customerOpen, ref)))
   } else {
-    lines.push(agentLine(agent, 'Can I get your account number to get started?'))
-    lines.push(customerLine(`It is ${order}.`))
+    lines.push(agentLine(agent, 'Can I get your account reference to get started?'))
+    lines.push(customerLine(`It is ${ref}.`))
   }
 
   if (isRepeat && !cfType) {
-    lines.push(customerLine(`This is my third time contacting Meridian Energy about ${subcategory.toLowerCase()} on account ${order}.`))
+    lines.push(customerLine(`This is my third time contacting Meridian Energy about ${subcategory.toLowerCase()} on account ${ref}.`))
   } else {
-    lines.push(customerLine(fillTemplate(issue.customerOpen, order)))
+    lines.push(customerLine(fillTemplate(issue.customerOpen, ref)))
   }
 
-  lines.push(agentLine(agent, fillTemplate(issue.agentFinding, order)))
-
-  lines.push(customerLine(fillTemplate(issue.customerFollow, order)))
+  lines.push(agentLine(agent, fillTemplate(issue.agentFinding, ref)))
+  lines.push(customerLine(fillTemplate(issue.customerFollow, ref)))
 
   if (cfType === 'policy_misquote') {
-    lines.push(agentLine(agent, 'Disconnect can happen in 5 days from the notice date under our standard policy.'))
-    lines.push(customerLine('I thought Meridian Energy required 10 days notice - that is what your website says.'))
-    lines.push(agentLine(agent, 'The system shows 5 days for this account type. I can note your concern but I cannot override that today.'))
+    lines.push(agentLine(agent, 'Charges from more than 12 months ago are still payable on your account under our standard terms.'))
+    lines.push(customerLine('I thought Meridian Energy could only back-bill for 12 months — that is what Ofgem guidance says.'))
+    lines.push(agentLine(agent, 'The system shows the full amount is due. I can note your concern but I cannot waive those periods today.'))
   } else if (cfType === 'escalation_avoidance' || zaneleEscalationMiss) {
-    lines.push(agentLine(agent, 'I understand this is frustrating. Let me try one more time to resolve the disconnect from my side.'))
+    lines.push(agentLine(agent, 'I understand this is frustrating. Let me try one more time to resolve the billing dispute from my side.'))
     lines.push(customerLine('I have already spoken to two other agents. I need a supervisor or escalation.'))
-    lines.push(agentLine(agent, 'I am sure we can sort this without escalating. I will refresh the account status now.'))
+    lines.push(agentLine(agent, 'I am sure we can sort this without escalating. I will refresh the account balance now.'))
     lines.push(customerLine('That is what I was told last time. I am not confident this is resolved.'))
-    lines.push(agentLine(agent, 'I have updated the notes. Please allow 24 hours and call back if service is still at risk.'))
+    lines.push(agentLine(agent, 'I have updated the notes. Please allow 24 hours and call back if you still do not see the corrected bill.'))
   } else if (cfType === 'verification_failure') {
-    lines.push(agentLine(agent, 'I will go ahead and discuss your billing details now without completing verification.'))
+    lines.push(agentLine(agent, 'I will go ahead and adjust the bill now without completing identity verification.'))
     lines.push(customerLine('Do you need me to confirm anything else for security?'))
-    lines.push(agentLine(agent, 'No, we are fine. I have noted your request.'))
-  } else if (cfType === 'no_resolution_confirmation' || (coachedBadPhase && queue === 'Billing & Payments' && !isBenchmark)) {
-    lines.push(agentLine(agent, 'I have started a payment arrangement in the system.'))
-    lines.push(customerLine('What are the monthly payments and when do they start?'))
-    lines.push(agentLine(agent, 'It should process soon. Is there anything else I can help with today?'))
-    lines.push(customerLine('So you cannot confirm the amount or due dates?'))
+    lines.push(agentLine(agent, 'No, we are fine. The adjustment is submitted.'))
+  } else if (cfType === 'no_resolution_confirmation' || (coachedBadPhase && isHighRisk && !isBenchmark)) {
+    lines.push(agentLine(agent, 'I have noted the billing dispute in the system.'))
+    lines.push(customerLine('When will I receive confirmation of the revised amount?'))
+    lines.push(agentLine(agent, 'It should be confirmed soon. Is there anything else I can help with today?'))
+    lines.push(customerLine('So you cannot confirm the credit amount or when it will appear?'))
     lines.push(agentLine(agent, 'The system will update automatically once processing completes. Thank you for calling Meridian Energy.'))
   } else if (escalated) {
-    lines.push(agentLine(agent, 'This needs our specialist billing team. I am escalating now with full notes on account ' + order + '.'))
-    lines.push(customerLine('How long until someone contacts me?'))
+    lines.push(agentLine(agent, 'This needs our billing specialist team. I am escalating now with full notes on account ' + ref + '.'))
+        lines.push(customerLine('How long until someone contacts me?'))
     lines.push(agentLine(agent, 'A specialist will reach out within 24 hours. Your escalation reference is on the case.'))
   } else {
-    const policyLine = queue === 'Billing & Payments'
-      ? 'Meridian Energy requires a 10-day notice before disconnection where applicable.'
-      : ''
-    if (policyLine && subcategory !== 'Disconnection Notice') {
+    const policyLine = isHighRisk ? 'Meridian Energy limits back-billing to 12 months where applicable under Ofgem rules.' : ''
+    if (policyLine && subcategory !== 'Policy Clarification') {
       lines.push(agentLine(agent, policyLine))
     }
-    lines.push(agentLine(agent, fillTemplate(issue.agentResolve, order)))
-    if (isBenchmark && queue === 'Billing & Payments') {
-      lines.push(agentLine(agent, 'To recap: your payment arrangement of $118 per month for 3 months starts today. I have added full notes to account ' + order + ' and confirmation is on its way by email.'))
+    lines.push(agentLine(agent, fillTemplate(issue.agentResolve, ref)))
+    if (isBenchmark && isHighRisk) {
+      lines.push(agentLine(agent, 'To recap: your billing adjustment of £47.80 is confirmed on account ' + ref + '. I have added full notes and confirmation is on its way by email.'))
     }
   }
 
@@ -509,22 +405,21 @@ function buildTranscript({
     lines.push(agentLine(agent, 'Please use the same case reference if you contact us again so we can pick up where we left off.'))
   }
 
+  padTranscript(lines, agent, ref,
+    subcategory)
   return lines.join('\n')
 }
 
 function buildRecord(id, weekIdx, opts = {}) {
-  const queue = opts.queue || pickWeighted(QUEUES, QUEUE_WEIGHTS)
+  const { l1, l2 } = pickDriver(opts)
   const channel = opts.channel || pickWeighted(CHANNELS, CHANNEL_WEIGHTS)
   const agent = opts.agent || pick(ALL_AGENTS)
-  const subcats = queue === 'Billing & Payments' ? BILLING_SUBCATEGORIES
-    : queue === 'Outage & Service Requests' ? OUTAGE_SUBCATEGORIES : ACCOUNT_SUBCATEGORIES
-  const subcategory = opts.subcategory || pick(subcats)
 
-  const cluster = opts.cluster || (rand() < 0.35 && queue === 'Billing & Payments' ? pick(REPEAT_CLUSTERS) : null)
+  const cluster = opts.cluster || (rand() < 0.35 && isHighRiskDriver(l1, l2) ? pick(REPEAT_CLUSTERS) : null)
   const customer = cluster ? cluster.customer : `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`
-  const order = cluster ? cluster.order : `ME-ACC-${20000 + Math.floor(rand() * 8000)}`
+  const ref = cluster ? cluster.account : `ME-ACC-${20000 + Math.floor(rand() * 8000)}`
 
-  const params = weekParams(weekIdx, queue, agent)
+  const params = weekParams(weekIdx, l1, l2, agent)
   const { date, time } = dateInWeek(weekIdx)
 
   const fcr = opts.fcr ?? (rand() < params.fcrBase)
@@ -556,14 +451,15 @@ function buildRecord(id, weekIdx, opts = {}) {
   const qaPass = !critical && qaScore >= 70
 
   const cfLabel = critical ? CF_TYPES.find((c) => c.id === cfType)?.label : null
-  const prefix = critical ? 'ME-BP-CF' : 'ME-BP-'
+  const prefix = critical ? 'ME-RX-CF' : 'ME-VR-'
   const callId = opts.callId || `${prefix}${String(id).padStart(6, '0')}`
 
   const transcript = buildTranscript({
     agent,
-    order,
-    subcategory,
-    queue,
+    ref,
+    subcategory: l2,
+    l1,
+    isHighRisk: params.isHighRisk,
     cfType: critical ? cfType : null,
     channel,
     phase: params.phase,
@@ -571,10 +467,25 @@ function buildRecord(id, weekIdx, opts = {}) {
     fcr,
     escalated,
   })
-  const summary = `Contact regarding account ${order} (${subcategory}) via ${channel}. `
+
+  const summary = `Contact regarding account ${ref} (${l2}) via ${channel}. `
     + (critical ? `Critical failure flagged: ${cfLabel}. ` : '')
     + (isRepeat ? 'This is a repeat contact on the same issue. ' : '')
     + (fcr ? 'Issue resolved on first contact.' : 'Issue not fully resolved; follow-up may be required.')
+
+  let micro_coaching_action = null
+  let formal_coaching_flag = false
+  if (critical && cfType) {
+    const shortLabel = CF_TYPES.find((c) => c.id === cfType)?.label?.split(':')[0] || cfType
+    micro_coaching_action = `QiQ micro coaching: ${shortLabel} flagged on this contact — review protocol before your next billing shift.`
+  } else if (!fcr && params.isHighRisk) {
+    micro_coaching_action = `QiQ micro coaching: Confirm revised bill amount and credit timeline before closing billing contacts.`
+  } else if (COACHED_AGENTS.includes(agent) && params.isHighRisk && (params.phase === 'decline' || params.phase === 'intervention')) {
+    micro_coaching_action = `QiQ micro coaching: ${agent.split(' ')[0]}, you missed resolution confirmation on a account contact today.`
+  }
+  if (COACHED_AGENTS.includes(agent) && params.phase === 'recovery' && params.isHighRisk) {
+    formal_coaching_flag = true
+  }
 
   return {
     call_id: callId,
@@ -582,12 +493,14 @@ function buildRecord(id, weekIdx, opts = {}) {
     agent_name: agent,
     call_date: date,
     call_time: time,
-    call_category: queue,
-    call_subcategory: subcategory,
-    merchant_name: customer,
-    merchant_contact: order,
+    driver_category: l1,
+    driver_subcategory: l2,
+    call_category: l1,
+    call_subcategory: l2,
+    account_name: customer,
+    account_contact: ref,
     channel,
-    order_number: order,
+    account_number: ref,
     call_handling_time: aht,
     transcript,
     narrative_summary: summary,
@@ -607,9 +520,15 @@ function buildRecord(id, weekIdx, opts = {}) {
     key_gaps: critical ? [cfLabel] : !fcr ? ['Resolution not confirmed at close.'] : [],
     questions_met: Math.floor(qaScore / 10),
     questions_not_met: 14 - Math.floor(qaScore / 10),
-    section_scores: sectionScores(queue, qaScore, cfType),
+    section_scores: sectionScores(params.isHighRisk, qaScore, cfType),
     question_evaluations: makeQuestionEvals(qaScore, cfType),
+    micro_coaching_action,
+    formal_coaching_flag,
   }
+}
+
+function isHighRiskRecord(r) {
+  return isHighRiskDriver(r.driver_category || r.call_category, r.driver_subcategory || r.call_subcategory)
 }
 
 // --- Generate ---
@@ -619,7 +538,7 @@ let cfCounter = 1
 
 for (let w = 0; w < WEEKS; w++) {
   const weekCount = w === WEEKS - 1 ? TOTAL - records.length : PER_WEEK
-  const cfTarget = w < 4 ? 12 + w * 2 : w < 6 ? 6 - (w - 4) * 2 : 2
+  const cfTarget = CF_WEEKLY_TARGET[w]
 
   const cfSlots = new Set()
   while (cfSlots.size < cfTarget && cfSlots.size < weekCount) {
@@ -629,52 +548,64 @@ for (let w = 0; w < WEEKS; w++) {
   for (let i = 0; i < weekCount; i++) {
     const isCf = cfSlots.has(i)
     const cfType = isCf ? CF_TYPES[cfCounter % CF_TYPES.length].id : null
-  const record = buildRecord(id++, w, {
+    const record = buildRecord(id++, w, {
       forceCritical: isCf,
       cfType,
-      callId: isCf ? `ME-BP-CF${String(cfCounter++).padStart(4, '0')}` : undefined,
+      callId: isCf ? `ME-RX-CF${String(cfCounter++).padStart(4, '0')}` : undefined,
       agent: isCf && w < 5 ? pick([...COACHED_AGENTS, 'Zanele Ndlovu']) : undefined,
-      queue: isCf ? 'Billing & Payments' : undefined,
+      forceHighRisk: isCf || undefined,
     })
     records.push(record)
   }
 }
 
-// Add dense repeat clusters for returns search
-for (const cluster of REPEAT_CLUSTERS.slice(0, 30)) {
+for (const cluster of REPEAT_CLUSTERS.slice(0, 140)) {
   for (let c = 0; c < cluster.contacts; c++) {
-    if (records.length >= TOTAL + 50) break
+    if (records.length >= TOTAL + 200) break
     const w = c === 0 ? Math.floor(rand() * 4) : Math.min(7, Math.floor(rand() * 4) + c)
     records.push(buildRecord(id++, w, {
       cluster,
-      queue: 'Billing & Payments',
-      subcategory: pick(['High Bill Dispute', 'Payment Arrangement Request', 'Disconnection Notice']),
+      l1: 'Billing & Payments',
+      l2: pick(['Payment Plan Requests', 'Tariff Corrections', 'Billing Inquiries']),
       isRepeat: c > 0,
       agent: pick(COACHED_AGENTS),
-      fcr: c === cluster.contacts - 1 ? false : false,
+      fcr: false,
       forceCritical: c === cluster.contacts - 1 && rand() < 0.4,
       cfType: c === cluster.contacts - 1 ? 'no_case_notes' : null,
     }))
   }
 }
 
-// Trim or pad to exactly TOTAL (replace tail if over)
 while (records.length > TOTAL) records.pop()
 while (records.length < TOTAL) {
-  records.push(buildRecord(id++, 7, { queue: 'Account & General Enquiries' }))
+  records.push(buildRecord(id++, 7, { l1: 'General Support' }))
 }
 
-// Force ~18% CSAT < 3 (calibrate)
-const lowCsatTarget = Math.round(TOTAL * 0.18)
-let lowIndices = records
-  .map((r, i) => ({ i, csat: r.predicted_csat_score }))
-  .filter((x) => x.csat < 3)
-  .map((x) => x.i)
+for (const featured of FEATURED_CF_CALLS) {
+  const idx = records.findIndex((r) => r.call_id === featured.callId)
+  if (idx < 0) continue
+  const w = WEEK_BOUNDARIES.findIndex((wb) => featured.date >= wb.start && featured.date <= wb.end)
+  const rebuilt = buildRecord(idx + 1, Math.max(0, w), {
+    callId: featured.callId,
+    agent: featured.agent,
+    cfType: featured.cfType,
+    forceCritical: true,
+    l1: 'Orders & Transactions',
+    l2: 'Billing Disputes',
+    fcr: false,
+    isRepeat: featured.cfType === 'no_case_notes' || featured.cfType === 'escalation_avoidance',
+  })
+  rebuilt.call_date = featured.date
+  records[idx] = rebuilt
+}
 
-// Raise excess low-CSAT records above 3
+// Calibrate CSAT < 3 ~18%
+const lowCsatTarget = Math.round(TOTAL * 0.18)
+let lowIndices = records.map((r, i) => ({ i, csat: r.predicted_csat_score })).filter((x) => x.csat < 3).map((x) => x.i)
+
 if (lowIndices.length > lowCsatTarget) {
   const toRaise = lowIndices
-    .filter((i) => records[i].call_category !== 'Billing & Payments' || rand() > 0.5)
+    .filter((i) => !isHighRiskRecord(records[i]) || rand() > 0.5)
     .slice(0, lowIndices.length - lowCsatTarget)
   for (const i of toRaise) {
     records[i].predicted_csat_score = Math.round((3.1 + rand() * 0.8) * 10) / 10
@@ -685,38 +616,33 @@ if (lowIndices.length > lowCsatTarget) {
 lowIndices = records.map((r, i) => (r.predicted_csat_score < 3 ? i : -1)).filter((i) => i >= 0)
 for (const i of records.map((_, idx) => idx)) {
   if (lowIndices.length >= lowCsatTarget) break
-  if (records[i].predicted_csat_score >= 3 && records[i].call_category === 'Billing & Payments') {
+  if (records[i].predicted_csat_score >= 3 && isHighRiskRecord(records[i])) {
     records[i].predicted_csat_score = Math.round((2 + rand() * 0.9) * 10) / 10
     records[i].predicted_csat_label = records[i].predicted_csat_score < 2.5 ? 'Very Dissatisfied' : 'Dissatisfied'
     lowIndices.push(i)
   }
 }
 
-// Calibrate AHT toward 348s period average
 const currentAht = records.reduce((s, r) => s + r.call_handling_time, 0) / records.length
 const ahtScale = 348 / currentAht
 for (const r of records) {
   r.call_handling_time = Math.round(r.call_handling_time * ahtScale)
-  if (r.call_category === 'Billing & Payments') {
+  if (isHighRiskRecord(r)) {
     r.call_handling_time = Math.round(r.call_handling_time * 1.08)
   }
 }
 
-// Calibrate repeat rate toward 23%
 const repeatTarget = Math.round(TOTAL * 0.23)
 let repeatCount = records.filter((r) => r.is_repeat_contact).length
 if (repeatCount < repeatTarget) {
-  const candidates = records
-    .filter((r) => !r.is_repeat_contact && r.call_category === 'Billing & Payments')
-    .sort(() => rand() - 0.5)
+  const candidates = records.filter((r) => !r.is_repeat_contact && isHighRiskRecord(r)).sort(() => rand() - 0.5)
   for (const r of candidates.slice(0, repeatTarget - repeatCount)) {
     r.is_repeat_contact = true
   }
 }
 
-// Boost coached agents W7-W8 returns FCR
 for (const r of records) {
-  if (COACHED_AGENTS.includes(r.agent_name) && r.call_category === 'Billing & Payments' && r.call_date >= '2026-05-18') {
+  if (COACHED_AGENTS.includes(r.agent_name) && isHighRiskRecord(r) && r.call_date >= '2026-05-18') {
     if (rand() < 0.75) {
       r.fcr_resolved = true
       r.predicted_csat_score = Math.round(Math.max(r.predicted_csat_score, 3.5) * 10) / 10
@@ -724,18 +650,134 @@ for (const r of records) {
   }
 }
 
-// Nudge period FCR to ~61%
 const fcrCount = records.filter((r) => r.fcr_resolved).length
 const targetFcr = Math.round(TOTAL * 0.61)
 if (fcrCount > targetFcr) {
-  const toFlip = records.filter((r) => r.fcr_resolved && r.call_category === 'Account & General Enquiries').slice(0, fcrCount - targetFcr)
+  const toFlip = records.filter((r) => r.fcr_resolved && r.driver_category === 'General Support').slice(0, fcrCount - targetFcr)
   for (const r of toFlip) r.fcr_resolved = false
 } else if (fcrCount < targetFcr) {
-  const toFlip = records.filter((r) => !r.fcr_resolved && r.call_category === 'Account & General Enquiries').slice(0, targetFcr - fcrCount)
+  const toFlip = records.filter((r) => !r.fcr_resolved && r.driver_category === 'General Support').slice(0, targetFcr - fcrCount)
   for (const r of toFlip) r.fcr_resolved = true
 }
 
-// --- Stats ---
+const escTarget = Math.round(TOTAL * 0.092)
+let escCount = records.filter((r) => r.escalated).length
+if (escCount > escTarget) {
+  for (const r of records.filter((r) => r.escalated && r.driver_category === 'General Support').slice(0, escCount - escTarget)) {
+    r.escalated = false
+  }
+} else if (escCount < escTarget) {
+  for (const r of records.filter((r) => !r.escalated && isHighRiskRecord(r)).slice(0, escTarget - escCount)) {
+    r.escalated = true
+  }
+}
+
+const trTarget = Math.round(TOTAL * 0.141)
+let trCount = records.filter((r) => r.transferred).length
+if (trCount > trTarget) {
+  for (const r of records.filter((r) => r.transferred && !r.escalated && r.driver_category === 'General Support').slice(0, trCount - trTarget)) {
+    r.transferred = false
+  }
+} else if (trCount < trTarget) {
+  for (const r of records.filter((r) => !r.transferred && !r.escalated && isHighRiskRecord(r)).slice(0, trTarget - trCount)) {
+    r.transferred = true
+  }
+}
+
+const csatAvg = records.reduce((s, r) => s + r.predicted_csat_score, 0) / records.length
+const csatShift = 3.6 - csatAvg
+for (const r of records) {
+  r.predicted_csat_score = Math.max(1, Math.min(5, Math.round((r.predicted_csat_score + csatShift) * 10) / 10))
+}
+
+const FEATURED_CF_IDS = new Set(FEATURED_CF_CALLS.map((f) => f.callId))
+
+function clearCriticalFlag(record) {
+  record.critical_failure = false
+  record.critical_failure_category = null
+  record.qa_score = Math.max(72, record.qa_score || 75)
+  record.qa_pass = record.qa_score >= 70
+  record.auto_fail_reasons = []
+  record.key_gaps = record.fcr_resolved ? [] : ['Resolution not confirmed at close.']
+}
+
+function applyCriticalFlag(record, cfTypeId) {
+  const cfMeta = CF_TYPES.find((c) => c.id === cfTypeId) || CF_TYPES[0]
+  record.critical_failure = true
+  record.critical_failure_category = cfMeta.id
+  record.qa_score = 0
+  record.qa_pass = false
+  record.fcr_resolved = false
+  record.auto_fail_reasons = [cfMeta.label]
+  record.key_gaps = [cfMeta.label]
+  if (!record.micro_coaching_action) {
+    const shortLabel = cfMeta.label.split(':')[0]
+    record.micro_coaching_action = `QiQ micro coaching: ${shortLabel} flagged on this contact — review protocol before your next billing shift.`
+  }
+}
+
+for (let w = 0; w < WEEKS; w++) {
+  const wb = WEEK_BOUNDARIES[w]
+  const target = CF_WEEKLY_TARGET[w]
+  const inWeek = records.filter((r) => r.call_date >= wb.start && r.call_date <= wb.end)
+
+  const refreshCfList = () => inWeek.filter((r) => r.critical_failure)
+  let cfList = refreshCfList()
+
+  while (cfList.length > target) {
+    const removable = cfList.filter((r) => !FEATURED_CF_IDS.has(r.call_id))
+    if (!removable.length) break
+    clearCriticalFlag(removable[removable.length - 1])
+    cfList = refreshCfList()
+  }
+
+  let typeIdx = 0
+  while (cfList.length < target) {
+    const pool = inWeek.filter((r) => !r.critical_failure && !FEATURED_CF_IDS.has(r.call_id))
+    const candidate = pool.find(isHighRiskRecord) || pool[0]
+    if (!candidate) break
+    applyCriticalFlag(candidate, CF_TYPES[typeIdx % CF_TYPES.length].id)
+    typeIdx += 1
+    cfList = refreshCfList()
+  }
+}
+
+function aggregateDrivers(data) {
+  const n = data.length
+  const byL1 = {}
+  const byL2 = {}
+
+  for (const l1 of L1_CATEGORIES) {
+    const subset = data.filter((r) => r.driver_category === l1)
+    if (!subset.length) continue
+    const esc = subset.filter((r) => r.escalated).length
+    byL1[l1] = {
+      volume: subset.length,
+      share: Math.round((subset.length / n) * 1000) / 10,
+      fcr: Math.round((subset.filter((r) => r.fcr_resolved).length / subset.length) * 1000) / 10,
+      aht: Math.round(subset.reduce((s, r) => s + r.call_handling_time, 0) / subset.length),
+      esc: Math.round((esc / subset.length) * 1000) / 10,
+      drivers: {},
+    }
+    for (const l2 of DRIVER_TAXONOMY[l1]) {
+      const sub = subset.filter((r) => r.driver_subcategory === l2)
+      if (!sub.length) continue
+      const subEsc = sub.filter((r) => r.escalated).length
+      const row = {
+        name: l2,
+        volume: sub.length,
+        share: Math.round((sub.length / subset.length) * 1000) / 10,
+        fcr: Math.round((sub.filter((r) => r.fcr_resolved).length / sub.length) * 1000) / 10,
+        aht: Math.round(sub.reduce((s, r) => s + r.call_handling_time, 0) / sub.length),
+        esc: Math.round((subEsc / sub.length) * 1000) / 10,
+      }
+      byL1[l1].drivers[l2] = row
+      byL2[`${l1}::${l2}`] = row
+    }
+  }
+  return { byL1, byL2 }
+}
+
 function aggregate(data) {
   const n = data.length
   const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length
@@ -747,10 +789,11 @@ function aggregate(data) {
   const tr = (data.filter((r) => r.transferred).length / n) * 100
   const csatLow = (data.filter((r) => r.predicted_csat_score < 3).length / n) * 100
 
-  const byQueue = {}
-  for (const q of QUEUES) {
-    const subset = data.filter((r) => r.call_category === q)
-    byQueue[q] = {
+  const byL1 = {}
+  for (const l1 of L1_CATEGORIES) {
+    const subset = data.filter((r) => r.driver_category === l1)
+    if (!subset.length) continue
+    byL1[l1] = {
       count: subset.length,
       aht: avg(subset.map((r) => r.call_handling_time)),
       fcr: (subset.filter((r) => r.fcr_resolved).length / subset.length) * 100,
@@ -759,17 +802,20 @@ function aggregate(data) {
     }
   }
 
-  const byWeek = WEEK_BOUNDARIES.map((w, wi) => {
+  const highRisk = data.filter(isHighRiskRecord)
+  const lowRisk = data.filter((r) => !isHighRiskRecord(r))
+
+  const byWeek = WEEK_BOUNDARIES.map((w) => {
     const subset = data.filter((r) => r.call_date >= w.start && r.call_date <= w.end)
-    const returns = subset.filter((r) => r.call_category === 'Billing & Payments')
+    const hr = subset.filter(isHighRiskRecord)
     return {
       week: w.label,
       aht: avg(subset.map((r) => r.call_handling_time)),
       fcr: (subset.filter((r) => r.fcr_resolved).length / subset.length) * 100,
       csat: avg(subset.map((r) => r.predicted_csat_score)),
       cf: subset.filter((r) => r.critical_failure).length,
-      returnsAht: returns.length ? avg(returns.map((r) => r.call_handling_time)) : 0,
-      returnsFcr: returns.length ? (returns.filter((r) => r.fcr_resolved).length / returns.length) * 100 : 0,
+      returnsAht: hr.length ? avg(hr.map((r) => r.call_handling_time)) : 0,
+      returnsFcr: hr.length ? (hr.filter((r) => r.fcr_resolved).length / hr.length) * 100 : 0,
     }
   })
 
@@ -780,32 +826,52 @@ function aggregate(data) {
 
   const coachedReturnsFcr = {}
   for (const agent of COACHED_AGENTS) {
-    const early = data.filter((r) => r.agent_name === agent && r.call_category === 'Billing & Payments' && r.call_date <= '2026-05-03')
-    const late = data.filter((r) => r.agent_name === agent && r.call_category === 'Billing & Payments' && r.call_date >= '2026-05-18')
+    const early = data.filter((r) => r.agent_name === agent && isHighRiskRecord(r) && r.call_date <= '2026-05-03')
+    const late = data.filter((r) => r.agent_name === agent && isHighRiskRecord(r) && r.call_date >= '2026-05-18')
     coachedReturnsFcr[agent] = {
       w1w4: early.length ? (early.filter((r) => r.fcr_resolved).length / early.length) * 100 : 0,
       w7w8: late.length ? (late.filter((r) => r.fcr_resolved).length / late.length) * 100 : 0,
     }
   }
 
-  return { n, aht, fcr, csat, rcr, er, tr, csatLow, byQueue, byWeek, byChannel, coachedReturnsFcr }
+  const driverStats = aggregateDrivers(data)
+
+  return {
+    n, aht, fcr, csat, rcr, er, tr, csatLow,
+    byL1, byQueue: byL1,
+    highRisk: {
+      count: highRisk.length,
+      aht: highRisk.length ? avg(highRisk.map((r) => r.call_handling_time)) : 0,
+      fcr: highRisk.length ? (highRisk.filter((r) => r.fcr_resolved).length / highRisk.length) * 100 : 0,
+    },
+    lowRisk: {
+      count: lowRisk.length,
+      fcr: lowRisk.length ? (lowRisk.filter((r) => r.fcr_resolved).length / lowRisk.length) * 100 : 0,
+    },
+    byWeek, byChannel, coachedReturnsFcr, driverStats,
+  }
 }
 
 const stats = aggregate(records)
 
-// Validation
 const errors = []
 if (records.length !== TOTAL) errors.push(`Count ${records.length} !== ${TOTAL}`)
 if (Math.abs(stats.csatLow - 18) > 3) errors.push(`CSAT<3 ${stats.csatLow.toFixed(1)}% not ~18%`)
-if (stats.byQueue['Billing & Payments'].fcr >= stats.byQueue['Outage & Service Requests'].fcr) {
-  errors.push('Billing FCR should be worst')
-}
+if (stats.highRisk.fcr >= stats.lowRisk.fcr) errors.push('High-risk FCR should be worst')
 for (const agent of COACHED_AGENTS) {
   const c = stats.coachedReturnsFcr[agent]
   if (c.w7w8 <= c.w1w4) errors.push(`${agent} FCR not improved W7-W8 vs W1-W4`)
 }
 
-console.log('Dataset stats:', JSON.stringify(stats, null, 2))
+let shortTranscripts = 0
+for (const r of records) {
+  const lines = r.transcript.split('\n').filter(Boolean)
+  const { total, agent: a, customer: c } = countTranscriptTurns(lines)
+  if (total < 8 || a < 3 || c < 3) shortTranscripts++
+}
+if (shortTranscripts > 0) errors.push(`${shortTranscripts} transcripts below minimum length`)
+
+console.log('Dataset stats:', JSON.stringify({ n: stats.n, byL1: stats.byL1, driverStatsL1: Object.fromEntries(Object.entries(stats.driverStats.byL1).map(([k, v]) => [k, { volume: v.volume, share: v.share }])) }, null, 2))
 if (errors.length) {
   console.warn('Validation warnings:', errors)
 } else {
